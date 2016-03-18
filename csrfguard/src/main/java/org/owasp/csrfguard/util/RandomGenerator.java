@@ -34,9 +34,9 @@ import java.security.NoSuchAlgorithmException;
 
 public final class RandomGenerator {
 
-	private final static char[] CHARSET = new char[] { 'A', 'B', 'C', 'D', 'E',
-			'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-			'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4',
+	private final static char[] CHARSET = new char[] { 'a', 'b', 'c', 'd', 'e',
+			'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
+			's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4',
 			'5', '6', '7', '8', '9' };
 
 	private RandomGenerator() {
@@ -54,17 +54,20 @@ public final class RandomGenerator {
 		return generateRandomId(SecureRandom.getInstance(prng, provider), len);
 	}
 
+	/*
+	 * Generates random ID based on lower characters and without dashes.
+	 * 
+	 * @param sr SecureRandom PRNG
+	 * @param len the token length
+	 * @return Generated token. 
+	 */
 	public static String generateRandomId(SecureRandom sr, int len) {
 		StringBuilder sb = new StringBuilder();
 
-		for (int i = 1; i < len + 1; i++) {
+		for (int i = 0; i < len; i++) {
 			int index = sr.nextInt(CHARSET.length);
 			char c = CHARSET[index];
 			sb.append(c);
-
-			if ((i % 4) == 0 && i != 0 && i < len) {
-				sb.append('-');
-			}
 		}
 
 		return sb.toString();

@@ -28,11 +28,11 @@
  */
 package org.owasp.csrfguard.tag;
 
-import java.io.*;
+import java.io.IOException;
 
 import javax.servlet.http.*;
 
-import org.owasp.csrfguard.*;
+import org.owasp.csrfguard.CsrfGuard;
 
 public final class TokenValueTag extends AbstractUriTag {
 
@@ -40,7 +40,7 @@ public final class TokenValueTag extends AbstractUriTag {
 
 	@Override
 	public int doStartTag() {
-		CsrfGuard csrfGuard = CsrfGuard.getInstance();
+		CsrfGuard csrfGuard = getCsrfGuardInstance();
 
 		if (csrfGuard.isTokenPerPageEnabled() && getUri() == null) {
 			throw new IllegalStateException("must define 'uri' attribute when token per page is enabled");

@@ -9,7 +9,7 @@ public class CsrfGuardHttpSessionListener implements HttpSessionListener {
 	@Override
 	public void sessionCreated(HttpSessionEvent event) {
 		HttpSession session = event.getSession();
-		CsrfGuard csrfGuard = CsrfGuard.getInstance();
+		CsrfGuard csrfGuard = CsrfGuard.getInstance(session.getServletContext().getContextPath());
 		csrfGuard.updateToken(session);
 	}
 

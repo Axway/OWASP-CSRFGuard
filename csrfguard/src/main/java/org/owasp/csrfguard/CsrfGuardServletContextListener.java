@@ -75,7 +75,7 @@ public class CsrfGuardServletContextListener implements ServletContextListener {
 			}
 			
 			properties.load(is);
-			CsrfGuard.load(properties);
+			CsrfGuard.load(properties, context.getContextPath());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} finally {
@@ -97,12 +97,12 @@ public class CsrfGuardServletContextListener implements ServletContextListener {
 		String printConfig = context.getInitParameter(CONFIG_PRINT_PARAM);
 
 		if (printConfig == null || "".equals(printConfig.trim())) {
-			printConfig = CsrfGuard.getInstance().isPrintConfig() ? "true" : null;
+			printConfig = CsrfGuard.getInstance(context.getContextPath()).isPrintConfig() ? "true" : null;
 		}
 		
 		if (printConfig != null && Boolean.parseBoolean(printConfig)) {
 			context.log(prefix 
-					+ CsrfGuard.getInstance().toString());
+					+ CsrfGuard.getInstance(context.getContextPath()).toString());
 		}
 	}
 

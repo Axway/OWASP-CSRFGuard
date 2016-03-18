@@ -30,6 +30,8 @@ package org.owasp.csrfguard.tag;
 
 import javax.servlet.jsp.tagext.*;
 
+import org.owasp.csrfguard.CsrfGuard;
+
 public abstract class AbstractTag extends TagSupport {
 
 	private final static long serialVersionUID = 0xadede854;
@@ -44,4 +46,7 @@ public abstract class AbstractTag extends TagSupport {
 		return uri;
 	}
 	
+	protected CsrfGuard getCsrfGuardInstance() {
+	    return CsrfGuard.getInstance(pageContext.getServletContext().getContextPath());
+	}
 }

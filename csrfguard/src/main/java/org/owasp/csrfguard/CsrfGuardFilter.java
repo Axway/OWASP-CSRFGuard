@@ -42,7 +42,7 @@ import javax.servlet.http.HttpSession;
 
 import org.owasp.csrfguard.http.InterceptRedirectResponse;
 
-public final class CsrfGuardFilter implements Filter {
+public class CsrfGuardFilter implements Filter {
 
 	private FilterConfig filterConfig = null;
 
@@ -54,8 +54,24 @@ public final class CsrfGuardFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
 
+        CsrfGuard csrfGuard = null;
+
+        /** only work with HttpServletRequest objects **/
+        if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
+            HttpServletRequest httpRequest = (HttpServletRequest) request;
+            HttpSession session = httpRequest.getSession(true);
+            csrfGuard = CsrfGuard.getInstance(session.getServletContext().getContextPath());
+        }
+
+        if (csrfGuard == null) {
+            filterConfig.getServletContext().log("[ERROR] No CsrfGuard instance for this request.");
+            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_NOT_FOUND,
+                    "CSRF protection is not configured.");
+            return;
+        }
+
 		//maybe the short circuit to disable is set
-		if (!CsrfGuard.getInstance().isEnabled()) {
+		if (!csrfGuard.isEnabled()) {
 			filterChain.doFilter(request, response);
 			return;
 		}
@@ -67,13 +83,12 @@ public final class CsrfGuardFilter implements Filter {
 			HttpSession session = httpRequest.getSession(false);
 			
 			//if there is no session and we arent validating when no session exists
-			if (session == null && !CsrfGuard.getInstance().isValidateWhenNoSessionExists()) {
+			if (session == null && !csrfGuard.isValidateWhenNoSessionExists()) {
 				// If there is no session, no harm can be done
 				filterChain.doFilter(httpRequest, (HttpServletResponse) response);
 				return;
 			}
 
-			CsrfGuard csrfGuard = CsrfGuard.getInstance();
 			csrfGuard.getLogger().log(String.format("CsrfGuard analyzing request %s", httpRequest.getRequestURI()));
 
 			InterceptRedirectResponse httpResponse = new InterceptRedirectResponse((HttpServletResponse) response, httpRequest, csrfGuard);
@@ -101,7 +116,7 @@ public final class CsrfGuardFilter implements Filter {
 	}
 
 	@Override
-	public void init(@SuppressWarnings("hiding") FilterConfig filterConfig) throws ServletException {
+	public void init(FilterConfig filterConfig) throws ServletException {
 		this.filterConfig = filterConfig;
 	}
 

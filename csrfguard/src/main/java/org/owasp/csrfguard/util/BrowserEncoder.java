@@ -28,6 +28,8 @@
  */
 package org.owasp.csrfguard.util;
 
+import java.util.Formatter;
+
 public final class BrowserEncoder {
 
 	private BrowserEncoder() {
@@ -85,4 +87,29 @@ public final class BrowserEncoder {
 		return sb.toString();
 	}
 	
+    /**
+     * Escapes the characters in a String.
+     * @param s - the String which characters should be escaped
+     */
+    public static String escapeXML(String s) {
+        StringBuilder b = new StringBuilder();
+        for (char ch : s.toCharArray()) {
+            if (ch == '&') {
+                b.append("&amp;");
+            } else if (ch == '<') {
+                b.append("&lt;");
+            } else if (ch == '>') {
+                b.append("&gt;");
+            }else if (ch == '"') {
+                b.append("&quot;");
+            } else if (ch == '\'') {
+                b.append("&apos;");
+            } else if ((ch >= 32) && (ch < 127)) {
+                b.append(ch);
+            } else {
+                b.append(new Formatter().format("&#x%04x;", ((int) ch) & 0xffff).toString());
+            }
+        }
+        return b.toString();
+    }
 }

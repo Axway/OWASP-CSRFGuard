@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
@@ -55,6 +57,7 @@ import org.owasp.csrfguard.config.overlay.ExpirableCache;
 import org.owasp.csrfguard.log.ILogger;
 import org.owasp.csrfguard.log.LogLevel;
 import org.owasp.csrfguard.servlet.JavaScriptServlet;
+import org.owasp.csrfguard.util.BrowserEncoder;
 import org.owasp.csrfguard.util.CsrfGuardUtils;
 import org.owasp.csrfguard.util.RandomGenerator;
 import org.owasp.csrfguard.util.Streams;
@@ -65,6 +68,8 @@ public final class CsrfGuard {
 	public final static String PAGE_TOKENS_KEY = "Owasp_CsrfGuard_Pages_Tokens_Key";
 
 	private Properties properties = null;
+
+	private String tokenLandingPageTitle = "";
 
 	/**
 	 * cache the configuration for a minute
@@ -109,23 +114,37 @@ public final class CsrfGuard {
 		Class<ConfigurationProviderFactory> configurationProviderFactoryClass = CsrfGuardUtils.forName(configurationProviderFactoryClassName);
 		
 		ConfigurationProviderFactory configurationProviderFactory = CsrfGuardUtils.newInstance(configurationProviderFactoryClass);
-							
+		
 		configurationProvider = configurationProviderFactory.retrieveConfiguration(this.properties);
 		configurationProviderExpirableCache.put(Boolean.TRUE, configurationProvider);
 		return configurationProvider;
 	}
 	
 	private static class SingletonHolder {
-	  public static final CsrfGuard instance = new CsrfGuard();
+		private static final ConcurrentMap<String, CsrfGuard> instances = new ConcurrentHashMap<String, CsrfGuard>(3);
+
+		private static CsrfGuard get(String contextPath) {
+			return instances.get(contextPath);
+		}
+
+		private static void set(String contextPath, CsrfGuard csrfGuard) {
+			instances.put(contextPath, csrfGuard);
+		}
 	}
 
-	public static CsrfGuard getInstance() {
-		return SingletonHolder.instance;
+	public static CsrfGuard getInstance(String contextPath) {
+		return SingletonHolder.get(contextPath);
 	}
 
-	public static void load(Properties theProperties) throws NoSuchAlgorithmException, InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, NoSuchProviderException {
+	public static void load(Properties theProperties, String contextPath) throws NoSuchAlgorithmException, InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, NoSuchProviderException {
+		if (getInstance(contextPath) == null) {
+			SingletonHolder.set(contextPath, new CsrfGuard());
+		}
 
-		getInstance().properties = theProperties;
+		/** load simple properties **/
+		getInstance(contextPath).properties = theProperties;
+		getInstance(contextPath).setTokenLandingPageTitle(theProperties.getProperty("org.owasp.csrfguard.TokenLandingPageTitle", "OWASP CSRFGuard Project - New Token Landing Page"));
+
 		configurationProviderExpirableCache.clear();
 	}
 	
@@ -172,6 +191,14 @@ public final class CsrfGuard {
 
 	public String getNewTokenLandingPage() {
 		return config().getNewTokenLandingPage();
+	}
+	
+	public String getTokenLandingPageTitle() {
+		return tokenLandingPageTitle;
+	}
+	
+	private void setTokenLandingPageTitle(String tokenLandingPageTitle) {
+		this.tokenLandingPageTitle = tokenLandingPageTitle;
 	}
 
 	public boolean isUseNewTokenLandingPage() {
@@ -439,14 +466,14 @@ public final class CsrfGuard {
 
 		sb.append("<html>\r\n");
 		sb.append("<head>\r\n");
-		sb.append("<title>OWASP CSRFGuard Project - New Token Landing Page</title>\r\n");
+		sb.append("<title>").append(getTokenLandingPageTitle()).append("</title>\r\n");
 		sb.append("</head>\r\n");
 		sb.append("<body>\r\n");
 		sb.append("<script type=\"text/javascript\">\r\n");
 		sb.append("var form = document.createElement(\"form\");\r\n");
 		sb.append("form.setAttribute(\"method\", \"post\");\r\n");
 		sb.append("form.setAttribute(\"action\", \"");
-		sb.append(landingPage);
+		sb.append(BrowserEncoder.escapeXML(landingPage));
 		sb.append("\");\r\n");
 
 		/** only include token if needed **/
