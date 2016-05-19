@@ -1,8 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.owasp</groupId>
 	<artifactId>csrfguard</artifactId>
-	<version>3.1.0-AXWAY-SNAPSHOT</version>
+	<version>3.1.0-AXWAY-2</version>
 	<packaging>jar</packaging>
 	<name>OWASP CSRFGuard</name>
 	<description>OWASP CSRFGuard is a library that implements a variant of the synchronizer token pattern to mitigate the risk of Cross-Site Request Forgery (CSRF) attacks.</description>
@@ -18,9 +19,11 @@
 		</license>
 	</licenses>
 	<scm>
-		<url>https://github.com/esheri3/OWASP-CSRFGuard</url>
-		<connection>https://github.com/esheri3/OWASP-CSRFGuard.git</connection>
-	</scm>
+		<url>git@github.com:Axway/OWASP-CSRFGuard.git</url>
+		<connection>scm:git:git@github.com:Axway/OWASP-CSRFGuard.git</connection>
+	<tag>3.1.0-AXWAY-2</tag>
+<developerConnection>scm:git:git@github.com:Axway/OWASP-CSRFGuard.git</developerConnection>
+</scm>
 	<developers>
 		<developer>
 			<id>esheri3</id>
